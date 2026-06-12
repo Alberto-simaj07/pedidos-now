@@ -1,0 +1,93 @@
+{
+  "info": {
+    "name": "Admin-Contabilidad — Integración Chats",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "BASE_URL", "value": "http://localhost:3000" },
+    { "key": "CONVERSATION_ID", "value": "3d0e8f5f-5327-11f1-b7d0-a2aa3582ff8d" },
+    { "key": "RESOLUCION_ID", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": { "method": "GET", "url": "{{BASE_URL}}/healthz" }
+    },
+    {
+      "name": "Chats — Inbound",
+      "item": [
+        {
+          "name": "POST Recibir resolución (webhook)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{BASE_URL}}/api/chats/resolucion",
+            "body": { "mode": "raw", "raw": "{\n  \"conversation_id\": \"{{CONVERSATION_ID}}\",\n  \"status\": \"RESOLVED_REFUND\",\n  \"requester_type\": \"CUSTOMER\",\n  \"requester_ext_id\": \"99\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chats — Resoluciones internas",
+      "item": [
+        {
+          "name": "GET Listar resoluciones",
+          "request": { "method": "GET", "url": { "raw": "{{BASE_URL}}/api/chats/resoluciones", "query": [{ "key": "estado", "value": "pendiente", "disabled": true }] } }
+        },
+        {
+          "name": "PATCH Procesar resolución",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{BASE_URL}}/api/chats/resoluciones/{{RESOLUCION_ID}}/procesar",
+            "body": { "mode": "raw", "raw": "{\n  \"reembolso_id\": null,\n  \"compensacion_id\": null,\n  \"notas\": \"Caso revisado y procesado\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chats — Conversaciones",
+      "item": [
+        {
+          "name": "GET Listar conversaciones",
+          "request": { "method": "GET", "url": { "raw": "{{BASE_URL}}/api/chats/conversaciones", "query": [{ "key": "status", "value": "RESOLVED_REFUND", "disabled": true }, { "key": "page", "value": "1", "disabled": true }] } }
+        },
+        {
+          "name": "GET Conversación por ID",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/chats/conversaciones/{{CONVERSATION_ID}}" }
+        },
+        {
+          "name": "GET Mensajes de conversación",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/chats/conversaciones/{{CONVERSATION_ID}}/mensajes" }
+        },
+        {
+          "name": "PATCH Cambiar estado",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{BASE_URL}}/api/chats/conversaciones/{{CONVERSATION_ID}}/estado",
+            "body": { "mode": "raw", "raw": "{\n  \"new_status\": \"RESOLVED_REFUND\",\n  \"changed_by_ext_id\": \"admin-01\",\n  \"reason\": \"Reembolso procesado\"\n}" }
+          }
+        },
+        {
+          "name": "PATCH Asignar agente",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{BASE_URL}}/api/chats/conversaciones/{{CONVERSATION_ID}}/agente",
+            "body": { "mode": "raw", "raw": "{\n  \"agent_ext_id\": \"agent-05\",\n  \"agent_display_name\": \"Carlos López\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chats — Estadísticas",
+      "item": [
+        {
+          "name": "GET Estadísticas por período",
+          "request": { "method": "GET", "url": { "raw": "{{BASE_URL}}/api/chats/estadisticas?periodo_inicio=2026-05-01&periodo_fin=2026-05-31", "query": [{ "key": "periodo_inicio", "value": "2026-05-01" }, { "key": "periodo_fin", "value": "2026-05-31" }] } }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,566 @@
+USE railway;
+
+-- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+--
+-- Host: localhost    Database: db_admin_contabilidad
+-- ------------------------------------------------------
+-- Server version	12.1.2-MariaDB
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `auditoria_financiera`
+--
+
+DROP TABLE IF EXISTS `auditoria_financiera`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `auditoria_financiera` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `accion` varchar(50) DEFAULT NULL,
+  `descripcion` text DEFAULT NULL,
+  `monto` decimal(10,2) DEFAULT NULL,
+  `fecha` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `auditoria_financiera`
+--
+
+LOCK TABLES `auditoria_financiera` WRITE;
+/*!40000 ALTER TABLE `auditoria_financiera` DISABLE KEYS */;
+INSERT INTO `auditoria_financiera` VALUES (1,'COMPENSACION','Compensaci├│n a entidad 1',50.00,'2026-03-29 08:31:49'),(2,'COMPENSACION','Compensaci├│n a entidad 1',30.00,'2026-03-29 09:02:31');
+/*!40000 ALTER TABLE `auditoria_financiera` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `auditoria_log`
+--
+
+DROP TABLE IF EXISTS `auditoria_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `auditoria_log` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `usuario_id` bigint(20) DEFAULT NULL,
+  `modulo` varchar(50) DEFAULT NULL,
+  `accion` varchar(50) DEFAULT NULL,
+  `descripcion` text DEFAULT NULL,
+  `fecha` datetime DEFAULT current_timestamp(),
+  `ip_origen` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `auditoria_log`
+--
+
+LOCK TABLES `auditoria_log` WRITE;
+/*!40000 ALTER TABLE `auditoria_log` DISABLE KEYS */;
+/*!40000 ALTER TABLE `auditoria_log` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `compensacion_entidad`
+--
+
+DROP TABLE IF EXISTS `compensacion_entidad`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `compensacion_entidad` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `entidad_comercial_id` bigint(20) DEFAULT NULL,
+  `motivo` varchar(200) DEFAULT NULL,
+  `monto` decimal(18,2) DEFAULT NULL,
+  `estado` enum('pendiente','aprobado','pagado','rechazado') DEFAULT 'pendiente',
+  `fecha_generacion` datetime DEFAULT current_timestamp(),
+  `fecha_pago` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `entidad_comercial_id` (`entidad_comercial_id`),
+  CONSTRAINT FOREIGN KEY (`entidad_comercial_id`) REFERENCES `entidad_comercial` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `compensacion_entidad`
+--
+
+LOCK TABLES `compensacion_entidad` WRITE;
+/*!40000 ALTER TABLE `compensacion_entidad` DISABLE KEYS */;
+INSERT INTO `compensacion_entidad` VALUES (1,1,'Conpensaci├│n de prueba',15.00,'aprobado','2026-03-21 12:55:51',NULL),(2,1,'Conpensaci├│n de prueba',15.00,'aprobado','2026-03-21 12:57:12',NULL),(3,1,'Conpensaci├│n de prueba',15.00,'aprobado','2026-03-21 13:00:16',NULL),(5,1,'Error en pedido',50.00,'aprobado','2026-03-28 21:31:49',NULL),(6,1,'Test flujo',30.00,'aprobado','2026-03-28 22:02:31',NULL);
+/*!40000 ALTER TABLE `compensacion_entidad` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `cuenta_fondo`
+--
+
+DROP TABLE IF EXISTS `cuenta_fondo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `cuenta_fondo` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) DEFAULT NULL,
+  `tipo` enum('reembolsos','salarios','compensaciones','operativo') DEFAULT NULL,
+  `saldo` decimal(18,2) DEFAULT 0.00,
+  `activo` tinyint(1) DEFAULT 1,
+  `creado_en` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `cuenta_fondo`
+--
+
+LOCK TABLES `cuenta_fondo` WRITE;
+/*!40000 ALTER TABLE `cuenta_fondo` DISABLE KEYS */;
+INSERT INTO `cuenta_fondo` VALUES (1,'Fondo general','operativo',2535.00,1,'2026-03-20 21:53:41'),(2,'Fondo reembolsos','operativo',330.00,1,'2026-03-21 17:40:26');
+/*!40000 ALTER TABLE `cuenta_fondo` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `empleado`
+--
+
+DROP TABLE IF EXISTS `empleado`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `empleado` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `usuario_ref_id` bigint(20) DEFAULT NULL,
+  `tipo_empleado` enum('repartidor','agente_servicio_cliente','admin') DEFAULT NULL,
+  `salario_base` decimal(18,2) DEFAULT NULL,
+  `activo` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`id`),
+  KEY `usuario_ref_id` (`usuario_ref_id`),
+  CONSTRAINT FOREIGN KEY (`usuario_ref_id`) REFERENCES `usuario_externo_ref` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `empleado`
+--
+
+LOCK TABLES `empleado` WRITE;
+/*!40000 ALTER TABLE `empleado` DISABLE KEYS */;
+INSERT INTO `empleado` VALUES (1,1,'repartidor',3000.00,1);
+/*!40000 ALTER TABLE `empleado` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `entidad_comercial`
+--
+
+DROP TABLE IF EXISTS `entidad_comercial`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `entidad_comercial` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `entidad_id_externo` bigint(20) NOT NULL,
+  `nombre_comercial` varchar(150) DEFAULT NULL,
+  `tipo` enum('restaurante','negocio','paqueteria') NOT NULL,
+  `activo` tinyint(1) DEFAULT 1,
+  `creado_en` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `entidad_id_externo` (`entidad_id_externo`,`tipo`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `entidad_comercial`
+--
+
+LOCK TABLES `entidad_comercial` WRITE;
+/*!40000 ALTER TABLE `entidad_comercial` DISABLE KEYS */;
+INSERT INTO `entidad_comercial` VALUES (1,1,'Pizza hut','restaurante',1,'2026-03-20 20:21:00'),(2,123,'Empresa prueba','restaurante',1,'2026-03-28 21:27:36');
+/*!40000 ALTER TABLE `entidad_comercial` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `estadistica_periodo`
+--
+
+DROP TABLE IF EXISTS `estadistica_periodo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `estadistica_periodo` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `entidad_comercial_id` bigint(20) DEFAULT NULL,
+  `periodo_inicio` date DEFAULT NULL,
+  `periodo_fin` date DEFAULT NULL,
+  `total_transacciones` int(11) DEFAULT NULL,
+  `ganancias_generadas` decimal(18,2) DEFAULT NULL,
+  `descuentos_aplicados` decimal(18,2) DEFAULT NULL,
+  `propinas_repartidores` decimal(18,2) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `entidad_comercial_id` (`entidad_comercial_id`),
+  CONSTRAINT FOREIGN KEY (`entidad_comercial_id`) REFERENCES `entidad_comercial` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `estadistica_periodo`
+--
+
+LOCK TABLES `estadistica_periodo` WRITE;
+/*!40000 ALTER TABLE `estadistica_periodo` DISABLE KEYS */;
+/*!40000 ALTER TABLE `estadistica_periodo` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `historial_movimiento`
+--
+
+DROP TABLE IF EXISTS `historial_movimiento`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `historial_movimiento` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `movimiento_id` bigint(20) DEFAULT NULL,
+  `estado` varchar(50) DEFAULT NULL,
+  `fecha` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `movimiento_id` (`movimiento_id`),
+  CONSTRAINT FOREIGN KEY (`movimiento_id`) REFERENCES `movimiento_financiero` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `historial_movimiento`
+--
+
+LOCK TABLES `historial_movimiento` WRITE;
+/*!40000 ALTER TABLE `historial_movimiento` DISABLE KEYS */;
+/*!40000 ALTER TABLE `historial_movimiento` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `movimiento_financiero`
+--
+
+DROP TABLE IF EXISTS `movimiento_financiero`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `movimiento_financiero` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `cuenta_id` bigint(20) NOT NULL,
+  `tipo` enum('ingreso','egreso') NOT NULL,
+  `subtipo` varchar(50) DEFAULT NULL,
+  `modulo_origen` enum('restaurante','paqueteria','pedido','reembolso','compensacion','nomina') DEFAULT NULL,
+  `referencia_id` bigint(20) DEFAULT NULL,
+  `monto` decimal(18,2) NOT NULL,
+  `descripcion` text DEFAULT NULL,
+  `creado_por` bigint(20) DEFAULT NULL,
+  `estado` enum('pendiente','aprobado','procesado','fallido') DEFAULT 'pendiente',
+  `fecha` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `cuenta_id` (`cuenta_id`),
+  CONSTRAINT FOREIGN KEY (`cuenta_id`) REFERENCES `cuenta_fondo` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `movimiento_financiero`
+--
+
+LOCK TABLES `movimiento_financiero` WRITE;
+/*!40000 ALTER TABLE `movimiento_financiero` DISABLE KEYS */;
+INSERT INTO `movimiento_financiero` VALUES (1,1,'egreso',NULL,NULL,NULL,200.00,'Pago de prueba',NULL,'pendiente','2026-03-20 21:54:30'),(2,1,'ingreso','pedido','restaurante',1,100.00,'Pedido de prueba',NULL,'procesado','2026-03-21 00:51:32'),(3,1,'ingreso','pedido','restaurante',1,100.00,'Pedido de prueba',NULL,'procesado','2026-03-21 00:53:07'),(4,1,'egreso','salario','nomina',1,30.00,NULL,NULL,'procesado','2026-03-21 01:11:46'),(5,1,'egreso','salario','nomina',1,30.00,NULL,NULL,'procesado','2026-03-21 10:53:00'),(6,1,'egreso','salario','nomina',1,30.00,NULL,NULL,'procesado','2026-03-21 10:53:56'),(7,1,'egreso','reembolso','nomina',1,20.00,'pedidio da├▒ado',NULL,'procesado','2026-03-21 11:58:15'),(8,1,'egreso',NULL,'nomina',1,15.00,'Conpensaci├│n de prueba',NULL,'procesado','2026-03-21 12:55:51'),(9,1,'egreso',NULL,'nomina',1,15.00,'Conpensaci├│n de prueba',NULL,'procesado','2026-03-21 12:57:12'),(10,1,'egreso',NULL,'nomina',1,15.00,'Conpensaci├│n de prueba',NULL,'procesado','2026-03-21 13:00:16'),(11,1,'ingreso','pedido','restaurante',10,50.00,'Pedido prueba',NULL,'procesado','2026-03-21 17:33:40'),(12,1,'egreso','salario','nomina',2,30.00,'Pago semanal',NULL,'procesado','2026-03-21 17:37:54'),(14,2,'egreso','reembolso','nomina',99,20.00,'Pedido cancelado',NULL,'procesado','2026-03-21 17:41:17'),(15,1,'ingreso','pedido','restaurante',1,100.00,'Pedido prueba',NULL,'procesado','2026-03-26 09:06:02'),(16,1,'egreso','salario','reembolso',1,500.00,'Pago de salario',NULL,'procesado','2026-03-28 17:59:35'),(17,1,'ingreso','pedido','restaurante',0,1000.00,'Recarga fondo reembolsos',NULL,'procesado','2026-03-28 20:11:54'),(18,1,'ingreso','pedido','restaurante',10,250.00,'Pedido desde microservicio de cobros',NULL,'procesado','2026-03-28 20:20:33'),(19,1,'ingreso','pedido','restaurante',10,100.00,NULL,NULL,'procesado','2026-03-28 21:30:57'),(20,1,'egreso','compensacion','reembolso',1,50.00,'Error en pedido',NULL,'procesado','2026-03-28 21:31:49'),(21,1,'egreso','salario','reembolso',1,500.00,'Pago de salario',NULL,'procesado','2026-03-28 21:32:07'),(22,1,'ingreso','pedido','restaurante',0,1000.00,'Recarga fondo reembolsos',NULL,'procesado','2026-03-28 21:32:28'),(23,2,'egreso','reembolso','reembolso',10,100.00,'Pedido cancelado',NULL,'procesado','2026-03-28 21:42:32'),(24,1,'ingreso','pedido','restaurante',50,300.00,'Test completo',NULL,'procesado','2026-03-28 22:01:23'),(25,1,'egreso','salario','reembolso',1,100.00,'Pago de salario',NULL,'procesado','2026-03-28 22:01:42'),(26,2,'egreso','reembolso','reembolso',50,50.00,'Test flujo completo',NULL,'procesado','2026-03-28 22:02:11'),(27,1,'egreso','compensacion','reembolso',1,30.00,'Test flujo',NULL,'procesado','2026-03-28 22:02:31');
+/*!40000 ALTER TABLE `movimiento_financiero` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `nomina_detalle`
+--
+
+DROP TABLE IF EXISTS `nomina_detalle`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `nomina_detalle` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `empleado_id` bigint(20) DEFAULT NULL,
+  `periodo_id` bigint(20) DEFAULT NULL,
+  `salario_base` decimal(18,2) DEFAULT NULL,
+  `bonificaciones` decimal(18,2) DEFAULT NULL,
+  `descuentos` decimal(18,2) DEFAULT NULL,
+  `total_pagar` decimal(18,2) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `empleado_id` (`empleado_id`),
+  KEY `periodo_id` (`periodo_id`),
+  CONSTRAINT FOREIGN KEY (`empleado_id`) REFERENCES `empleado` (`id`),
+  CONSTRAINT FOREIGN KEY (`periodo_id`) REFERENCES `periodo_nomina` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `nomina_detalle`
+--
+
+LOCK TABLES `nomina_detalle` WRITE;
+/*!40000 ALTER TABLE `nomina_detalle` DISABLE KEYS */;
+/*!40000 ALTER TABLE `nomina_detalle` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `pago_nomina`
+--
+
+DROP TABLE IF EXISTS `pago_nomina`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pago_nomina` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `nomina_detalle_id` bigint(20) DEFAULT NULL,
+  `cuenta_fondo_id` bigint(20) DEFAULT NULL,
+  `monto_pagado` decimal(18,2) DEFAULT NULL,
+  `estado` enum('pendiente','procesado','fallido') DEFAULT NULL,
+  `fecha_pago` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `nomina_detalle_id` (`nomina_detalle_id`),
+  KEY `cuenta_fondo_id` (`cuenta_fondo_id`),
+  CONSTRAINT FOREIGN KEY (`nomina_detalle_id`) REFERENCES `nomina_detalle` (`id`),
+  CONSTRAINT FOREIGN KEY (`cuenta_fondo_id`) REFERENCES `cuenta_fondo` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pago_nomina`
+--
+
+LOCK TABLES `pago_nomina` WRITE;
+/*!40000 ALTER TABLE `pago_nomina` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pago_nomina` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `pagos_agentes`
+--
+
+DROP TABLE IF EXISTS `pagos_agentes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pagos_agentes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `agente_id` int(11) NOT NULL,
+  `salario` decimal(10,2) DEFAULT NULL,
+  `fecha_pago` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pagos_agentes`
+--
+
+LOCK TABLES `pagos_agentes` WRITE;
+/*!40000 ALTER TABLE `pagos_agentes` DISABLE KEYS */;
+INSERT INTO `pagos_agentes` VALUES (1,1,5000.00,'2026-03-19 11:25:20'),(2,1,500.00,'2026-03-28 17:48:27'),(3,1,500.00,'2026-03-28 17:58:46'),(4,1,500.00,'2026-03-28 17:59:35'),(5,1,500.00,'2026-03-28 21:32:07'),(6,1,100.00,'2026-03-28 22:01:42');
+/*!40000 ALTER TABLE `pagos_agentes` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `pedido_contabilidad`
+--
+
+DROP TABLE IF EXISTS `pedido_contabilidad`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pedido_contabilidad` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `entidad_comercial_id` bigint(20) DEFAULT NULL,
+  `pedido_id_externo` bigint(20) DEFAULT NULL,
+  `subtotal` decimal(18,2) DEFAULT NULL,
+  `descuento` decimal(18,2) DEFAULT NULL,
+  `comision` decimal(18,2) DEFAULT NULL,
+  `total` decimal(18,2) DEFAULT NULL,
+  `estado` enum('completado','cancelado','reembolsado') DEFAULT NULL,
+  `fecha` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `entidad_comercial_id` (`entidad_comercial_id`),
+  CONSTRAINT FOREIGN KEY (`entidad_comercial_id`) REFERENCES `entidad_comercial` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pedido_contabilidad`
+--
+
+LOCK TABLES `pedido_contabilidad` WRITE;
+/*!40000 ALTER TABLE `pedido_contabilidad` DISABLE KEYS */;
+INSERT INTO `pedido_contabilidad` VALUES (2,1,NULL,100.00,10.00,5.00,95.00,'completado','2026-03-20 20:21:52'),(3,NULL,NULL,NULL,NULL,NULL,50.00,'completado','2026-03-21 17:02:27');
+/*!40000 ALTER TABLE `pedido_contabilidad` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `pedido_reparto`
+--
+
+DROP TABLE IF EXISTS `pedido_reparto`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `pedido_reparto` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `pedido_id` bigint(20) DEFAULT NULL,
+  `empleado_id` bigint(20) DEFAULT NULL,
+  `propina` decimal(18,2) DEFAULT NULL,
+  `distancia_km` decimal(10,2) DEFAULT NULL,
+  `tiempo_minutos` int(11) DEFAULT NULL,
+  `fecha` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `pedido_id` (`pedido_id`),
+  KEY `empleado_id` (`empleado_id`),
+  CONSTRAINT FOREIGN KEY (`pedido_id`) REFERENCES `pedido_contabilidad` (`id`),
+  CONSTRAINT FOREIGN KEY (`empleado_id`) REFERENCES `empleado` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pedido_reparto`
+--
+
+LOCK TABLES `pedido_reparto` WRITE;
+/*!40000 ALTER TABLE `pedido_reparto` DISABLE KEYS */;
+INSERT INTO `pedido_reparto` VALUES (4,2,1,20.00,NULL,NULL,'2026-03-20 21:45:15');
+/*!40000 ALTER TABLE `pedido_reparto` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `periodo_nomina`
+--
+
+DROP TABLE IF EXISTS `periodo_nomina`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `periodo_nomina` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `fecha_inicio` date DEFAULT NULL,
+  `fecha_fin` date DEFAULT NULL,
+  `tipo` enum('quincenal','mensual') DEFAULT NULL,
+  `cerrado` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `periodo_nomina`
+--
+
+LOCK TABLES `periodo_nomina` WRITE;
+/*!40000 ALTER TABLE `periodo_nomina` DISABLE KEYS */;
+/*!40000 ALTER TABLE `periodo_nomina` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `reembolso_cliente`
+--
+
+DROP TABLE IF EXISTS `reembolso_cliente`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reembolso_cliente` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `usuario_ref_id` bigint(20) DEFAULT NULL,
+  `pedido_id_externo` bigint(20) DEFAULT NULL,
+  `motivo` varchar(200) DEFAULT NULL,
+  `monto` decimal(18,2) DEFAULT NULL,
+  `estado` enum('pendiente','aprobado','procesado','rechazado') DEFAULT NULL,
+  `fecha_solicitud` datetime DEFAULT current_timestamp(),
+  `fecha_procesado` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `usuario_ref_id` (`usuario_ref_id`),
+  CONSTRAINT FOREIGN KEY (`usuario_ref_id`) REFERENCES `usuario_externo_ref` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reembolso_cliente`
+--
+
+LOCK TABLES `reembolso_cliente` WRITE;
+/*!40000 ALTER TABLE `reembolso_cliente` DISABLE KEYS */;
+INSERT INTO `reembolso_cliente` VALUES (1,1,1,'pedidio da├▒ado',20.00,'aprobado','2026-03-21 11:56:34',NULL),(2,1,1,'pedidio da├▒ado',20.00,'aprobado','2026-03-21 11:58:15',NULL),(3,1,99,'Pedido cancelado',20.00,'aprobado','2026-03-21 17:38:18',NULL),(4,1,99,'Pedido cancelado',20.00,'aprobado','2026-03-21 17:41:17',NULL),(5,1,10,'Pedido cancelado',100.00,'procesado','2026-03-28 21:42:32',NULL),(6,1,50,'Test flujo completo',50.00,'procesado','2026-03-28 22:02:11',NULL);
+/*!40000 ALTER TABLE `reembolso_cliente` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `reporte_generado`
+--
+
+DROP TABLE IF EXISTS `reporte_generado`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reporte_generado` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `tipo_reporte` enum('ventas','pedidos_atendidos','chats_resueltos','nuevos_usuarios','costos') DEFAULT NULL,
+  `periodo_inicio` date DEFAULT NULL,
+  `periodo_fin` date DEFAULT NULL,
+  `parametros` text DEFAULT NULL,
+  `resultado_json` text DEFAULT NULL,
+  `generado_por` bigint(20) DEFAULT NULL,
+  `creado_en` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reporte_generado`
+--
+
+LOCK TABLES `reporte_generado` WRITE;
+/*!40000 ALTER TABLE `reporte_generado` DISABLE KEYS */;
+/*!40000 ALTER TABLE `reporte_generado` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `usuario_externo_ref`
+--
+
+DROP TABLE IF EXISTS `usuario_externo_ref`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `usuario_externo_ref` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `usuario_id_externo` bigint(20) NOT NULL,
+  `nombre` varchar(150) DEFAULT NULL,
+  `email` varchar(150) DEFAULT NULL,
+  `tipo_usuario` enum('cliente','repartidor','negocio','agente','admin') NOT NULL,
+  `activo` tinyint(1) DEFAULT 1,
+  `creado_en` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `usuario_id_externo` (`usuario_id_externo`,`tipo_usuario`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `usuario_externo_ref`
+--
+
+LOCK TABLES `usuario_externo_ref` WRITE;
+/*!40000 ALTER TABLE `usuario_externo_ref` DISABLE KEYS */;
+INSERT INTO `usuario_externo_ref` VALUES (1,1,'Juan',NULL,'repartidor',1,'2026-03-20 21:41:49');
+/*!40000 ALTER TABLE `usuario_externo_ref` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-03-28 22:05:54

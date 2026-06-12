@@ -1,0 +1,974 @@
+{
+  "info": {
+    "name": "Admin-Contabilidad — Colección Completa",
+    "description": "Todos los endpoints del microservicio admin-contabilidad de Pedidos Now. Cubre: Auth, Movimientos, Cobros, Bancos, Reembolsos, Compensaciones, Pagos Agentes, Dashboard, Reportes, Negocios, Restaurantes, Paquetería, Cupones, Promociones, Chats.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "BASE_URL",   "value": "http://localhost:3000", "type": "string" },
+    { "key": "TOKEN",      "value": "",  "type": "string",  "description": "JWT — se llena automáticamente al hacer POST /api/auth/login" },
+    { "key": "COBRO_ID",   "value": "1", "type": "string" },
+    { "key": "REEMBOLSO_ID", "value": "1", "type": "string" },
+    { "key": "MOVIMIENTO_ID", "value": "1", "type": "string" },
+    { "key": "AGENTE_ID",  "value": "1", "type": "string" },
+    { "key": "CUPON_ID",   "value": "1", "type": "string" },
+    { "key": "PROMO_ID",   "value": "1", "type": "string" },
+    { "key": "CONVERSATION_ID", "value": "3d0e8f5f-5327-11f1-b7d0-a2aa3582ff8d", "type": "string" },
+    { "key": "RESOLUCION_ID", "value": "1", "type": "string" },
+    { "key": "BUSINESS_ID", "value": "1", "type": "string" },
+    { "key": "REPARTIDOR_ID", "value": "1", "type": "string" },
+    { "key": "CUENTA_ID",  "value": "1", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{TOKEN}}", "type": "string" }]
+  },
+  "item": [
+
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Registrar usuario",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Alberto\",\n  \"apellidos\": \"Simaj\",\n  \"email\": \"admin@test.com\",\n  \"password\": \"password123\",\n  \"tipo_usuario\": \"admin\",\n  \"rol\": \"admin\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const r = pm.response.json();",
+                  "if (r.token) pm.collectionVariables.set('TOKEN', r.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@test.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Mi perfil",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/auth/me",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{TOKEN}}" }] }
+          }
+        },
+        {
+          "name": "Actualizar perfil",
+          "request": {
+            "method": "PUT",
+            "url": "{{BASE_URL}}/api/auth/me",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{TOKEN}}" }] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Alberto\",\n  \"telefono\": \"555-1234\"\n}"
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Movimientos Financieros",
+      "item": [
+        {
+          "name": "Listar movimientos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/api/movimientos",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "movimientos"]
+            }
+          }
+        },
+        {
+          "name": "Crear movimiento",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/movimientos",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cuenta_id\": 1,\n  \"tipo\": \"ingreso\",\n  \"subtipo\": \"pedido\",\n  \"modulo_origen\": \"broker\",\n  \"referencia_id\": 1001,\n  \"monto\": 150.75,\n  \"descripcion\": \"Ingreso por pedido desde broker\",\n  \"pedido_id\": 1001,\n  \"repartidor_id\": 25,\n  \"estado\": \"procesado\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener movimiento por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/movimientos/{{MOVIMIENTO_ID}}"
+          }
+        },
+        {
+          "name": "Actualizar movimiento",
+          "request": {
+            "method": "PUT",
+            "url": "{{BASE_URL}}/api/movimientos/{{MOVIMIENTO_ID}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"anulado\",\n  \"descripcion\": \"Movimiento corregido\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar movimiento",
+          "request": {
+            "method": "DELETE",
+            "url": "{{BASE_URL}}/api/movimientos/{{MOVIMIENTO_ID}}"
+          }
+        },
+        {
+          "name": "Saldo de cuenta",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/movimientos/saldo/{{CUENTA_ID}}"
+          }
+        },
+        {
+          "name": "Movimientos por periodo",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/api/movimientos/periodo?inicio=2026-01-01&fin=2026-06-30",
+              "query": [
+                { "key": "inicio", "value": "2026-01-01" },
+                { "key": "fin",    "value": "2026-06-30" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Estadísticas de movimientos",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/movimientos/estadisticas"
+          }
+        },
+        {
+          "name": "Test DB",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/movimientos/test"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Cobros (Payments)",
+      "item": [
+        {
+          "name": "Listar cobros",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/payments"
+          }
+        },
+        {
+          "name": "Crear cobro",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/payments",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cliente_id\": 10,\n  \"pedido_id\": 1001,\n  \"repartidor_id\": 25,\n  \"monto_total\": 180.50,\n  \"tarifa_servicio\": 15.00,\n  \"propina\": 20.00,\n  \"tipo_pago\": \"tarjeta\",\n  \"idempotency_key\": \"pedido-1001-intento-1\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener cobro por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/payments/{{COBRO_ID}}"
+          }
+        },
+        {
+          "name": "Eliminar cobro",
+          "request": {
+            "method": "DELETE",
+            "url": "{{BASE_URL}}/api/payments/{{COBRO_ID}}"
+          }
+        },
+        {
+          "name": "Estado banco (reconciliación)",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/payments/estado/banco"
+          }
+        },
+        {
+          "name": "Cobros por repartidor",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/payments/repartidor/{{REPARTIDOR_ID}}"
+          }
+        },
+        {
+          "name": "Saldo de repartidor",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/payments/saldo/{{REPARTIDOR_ID}}"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Bancos",
+      "item": [
+        {
+          "name": "Listar cuentas bancarias",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/bancos/cuentas"
+          }
+        },
+        {
+          "name": "Saldo de cuenta bancaria",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/bancos/saldo/001-123456-78"
+          }
+        },
+        {
+          "name": "Estado del banco",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/bancos/estado"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Reembolsos",
+      "item": [
+        {
+          "name": "Listar reembolsos",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/reembolsos"
+          }
+        },
+        {
+          "name": "Crear reembolso",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/reembolsos",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario_ref_id\": 42,\n  \"pedido_id_externo\": 1001,\n  \"cobro_id\": 1,\n  \"motivo\": \"Pedido llegó incompleto\",\n  \"monto\": 75.00\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener reembolso por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/reembolsos/{{REEMBOLSO_ID}}"
+          }
+        },
+        {
+          "name": "Procesar reembolso",
+          "request": {
+            "method": "PUT",
+            "url": "{{BASE_URL}}/api/reembolsos/{{REEMBOLSO_ID}}/procesar",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notas\": \"Aprobado por auditoría interna\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Rechazar reembolso",
+          "request": {
+            "method": "PUT",
+            "url": "{{BASE_URL}}/api/reembolsos/{{REEMBOLSO_ID}}/rechazar",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"No cumple con la política de reembolsos\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Total de reembolsos",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/reembolsos/total"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Compensaciones",
+      "item": [
+        {
+          "name": "Listar compensaciones",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/compensaciones"
+          }
+        },
+        {
+          "name": "Crear compensación",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/compensaciones",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entidad_comercial_id\": 5,\n  \"motivo\": \"Falla del sistema durante hora pico\",\n  \"monto\": 200.00,\n  \"notas\": \"Compensación aprobada por coordinador\"\n}"
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Pagos a Agentes",
+      "item": [
+        {
+          "name": "Listar pagos a agentes",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/pagos-agentes"
+          }
+        },
+        {
+          "name": "Crear pago a agente",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/pagos-agentes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agente_id\": 7,\n  \"monto\": 500.00,\n  \"periodo\": \"2026-06\",\n  \"descripcion\": \"Pago quincenal agente soporte\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener pago por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/pagos-agentes/{{AGENTE_ID}}"
+          }
+        },
+        {
+          "name": "Total pagos agentes",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/pagos-agentes/total"
+          }
+        },
+        {
+          "name": "Pagos por agente",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/pagos-agentes/agente/{{AGENTE_ID}}"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Indicadores generales",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/dashboard"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Reportes",
+      "item": [
+        {
+          "name": "Reporte de ventas",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/api/reportes/ventas?inicio=2026-01-01&fin=2026-06-30",
+              "query": [
+                { "key": "inicio", "value": "2026-01-01" },
+                { "key": "fin",    "value": "2026-06-30" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reporte de pedidos",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/reportes/pedidos"
+          }
+        },
+        {
+          "name": "Reporte de crecimiento",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/reportes/crecimiento"
+          }
+        },
+        {
+          "name": "Reporte de costos",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/reportes/costos"
+          }
+        },
+        {
+          "name": "Pagos por fecha",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/api/reportes/pagos-fecha?fecha=2026-06-11",
+              "query": [{ "key": "fecha", "value": "2026-06-11" }]
+            }
+          }
+        },
+        {
+          "name": "Reporte de propinas",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/reportes/propinas"
+          }
+        },
+        {
+          "name": "Reporte de chats",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/reportes/chats"
+          }
+        },
+        {
+          "name": "Reporte de usuarios",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/reportes/usuarios"
+          }
+        },
+        {
+          "name": "Pedidos externos",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/reportes/pedidos-externos"
+          }
+        },
+        {
+          "name": "Reembolsos y compensaciones",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/reportes/reembolsos-compensaciones"
+          }
+        },
+        {
+          "name": "Estadísticas por entidad",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/reportes/estadisticas-entidad"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Reportes — Negocios",
+      "item": [
+        {
+          "name": "Health check Negocios",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-negocios/health" }
+        },
+        {
+          "name": "Listar negocios",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-negocios/businesses" }
+        },
+        {
+          "name": "Detalle de negocio",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-negocios/businesses/{{BUSINESS_ID}}" }
+        },
+        {
+          "name": "Catálogo de negocio",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-negocios/businesses/{{BUSINESS_ID}}/catalog" }
+        },
+        {
+          "name": "Productos de negocio",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-negocios/businesses/{{BUSINESS_ID}}/products" }
+        },
+        {
+          "name": "Inventario de negocio",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-negocios/businesses/{{BUSINESS_ID}}/inventory" }
+        },
+        {
+          "name": "Inventario — producto específico",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-negocios/businesses/{{BUSINESS_ID}}/inventory/products/1" }
+        },
+        {
+          "name": "Registrar pedido contabilidad (Negocios)",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/reportes-negocios/pedido-contabilidad",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pedido_id_externo\": 2001,\n  \"entidad_comercial_id\": 3,\n  \"subtotal\": 120.00,\n  \"descuento\": 10.00,\n  \"comision\": 12.00,\n  \"total\": 110.00\n}"
+            }
+          }
+        },
+        {
+          "name": "Resumen contable (todos los negocios)",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-negocios/resumen" }
+        },
+        {
+          "name": "Resumen contable por negocio",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-negocios/resumen/{{BUSINESS_ID}}" }
+        },
+        {
+          "name": "Movimiento — pedido",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/reportes-negocios/movimientos/pedido",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pedido_id\": 2001,\n  \"monto\": 110.00,\n  \"cuenta_id\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Movimiento — cancelación",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/reportes-negocios/movimientos/cancelacion",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pedido_id\": 2001,\n  \"monto\": 110.00,\n  \"motivo\": \"Cliente canceló\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Movimiento — descuento",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/reportes-negocios/movimientos/descuento",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pedido_id\": 2001,\n  \"monto\": 10.00,\n  \"descripcion\": \"Descuento por cupón\"\n}"
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Reportes — Restaurantes",
+      "item": [
+        {
+          "name": "Resumen restaurantes (todos)",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-restaurantes/restaurantes/resumen" }
+        },
+        {
+          "name": "Resumen por restaurante",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-restaurantes/restaurantes/{{BUSINESS_ID}}/resumen" }
+        },
+        {
+          "name": "Cancelaciones y multas",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-restaurantes/restaurantes/cancelaciones-multas" }
+        },
+        {
+          "name": "Registrar pedido contabilidad (Restaurante)",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/reportes-restaurantes/pedido-contabilidad",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pedido_id_externo\": 3001,\n  \"restaurante_id\": 8,\n  \"subtotal\": 95.00,\n  \"comision\": 9.50,\n  \"total\": 85.50\n}"
+            }
+          }
+        },
+        {
+          "name": "Registrar cancelación (Restaurante)",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/reportes-restaurantes/cancelacion",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pedido_id\": 3001,\n  \"motivo\": \"Restaurante cerrado\",\n  \"monto_multa\": 20.00\n}"
+            }
+          }
+        },
+        {
+          "name": "Resumen ORM (todos)",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-restaurantes/resumen-orm" }
+        },
+        {
+          "name": "Resumen ORM por restaurante",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-restaurantes/resumen-orm/{{BUSINESS_ID}}" }
+        }
+      ]
+    },
+
+    {
+      "name": "Reportes — Paquetería",
+      "item": [
+        {
+          "name": "Health check Paquetería",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-paqueteria/health" }
+        },
+        {
+          "name": "Listar envíos",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-paqueteria/shipments" }
+        },
+        {
+          "name": "Detalle de envío",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-paqueteria/shipments/1" }
+        },
+        {
+          "name": "Listar paquetes",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-paqueteria/packages" }
+        },
+        {
+          "name": "Detalle de paquete",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-paqueteria/packages/1" }
+        },
+        {
+          "name": "Tracking de paquete",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-paqueteria/packages/1/tracking" }
+        },
+        {
+          "name": "Listar repartidores",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-paqueteria/couriers" }
+        },
+        {
+          "name": "Repartidores disponibles",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-paqueteria/couriers/available" }
+        },
+        {
+          "name": "Precios de envío",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-paqueteria/prices" }
+        },
+        {
+          "name": "Cotizar envío",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/reportes-paqueteria/quote",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"origen\": \"Ciudad de México\",\n  \"destino\": \"Guadalajara\",\n  \"peso_kg\": 2.5\n}"
+            }
+          }
+        },
+        {
+          "name": "Registrar envío contabilidad",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/reportes-paqueteria/envio-contabilidad",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shipment_id\": 4001,\n  \"monto\": 85.00,\n  \"courier_id\": 12\n}"
+            }
+          }
+        },
+        {
+          "name": "Registrar cancelación (Paquetería)",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/reportes-paqueteria/cancelacion",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shipment_id\": 4001,\n  \"motivo\": \"Dirección incorrecta\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Registrar recargo",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/reportes-paqueteria/recargo",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shipment_id\": 4001,\n  \"monto\": 15.00,\n  \"motivo\": \"Reintento de entrega\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Resumen paquetería (todos)",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-paqueteria/resumen" }
+        },
+        {
+          "name": "Resumen por repartidor",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/reportes-paqueteria/resumen/repartidor/{{REPARTIDOR_ID}}" }
+        }
+      ]
+    },
+
+    {
+      "name": "Cupones",
+      "item": [
+        {
+          "name": "Crear cupón de lealtad",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/cupones/lealtad",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario_id\": 10,\n  \"descuento\": 15.00,\n  \"tipo\": \"porcentaje\",\n  \"vence_en_dias\": 30\n}"
+            }
+          }
+        },
+        {
+          "name": "Activar cupón",
+          "request": {
+            "method": "PATCH",
+            "url": "{{BASE_URL}}/api/cupones/{{CUPON_ID}}/activar"
+          }
+        },
+        {
+          "name": "Cancelar cupón",
+          "request": {
+            "method": "PATCH",
+            "url": "{{BASE_URL}}/api/cupones/{{CUPON_ID}}/cancelar"
+          }
+        },
+        {
+          "name": "Vencer cupones expirados",
+          "request": {
+            "method": "PATCH",
+            "url": "{{BASE_URL}}/api/cupones/vencer"
+          }
+        },
+        {
+          "name": "Buscar cupón por código",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/cupones/codigo/PROMO2026"
+          }
+        },
+        {
+          "name": "Obtener cupón por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/cupones/{{CUPON_ID}}"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Promociones",
+      "item": [
+        {
+          "name": "Listar promociones",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/promociones" }
+        },
+        {
+          "name": "Obtener promoción por ID",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/promociones/{{PROMO_ID}}" }
+        },
+        {
+          "name": "Cambiar estado de promoción",
+          "request": {
+            "method": "PATCH",
+            "url": "{{BASE_URL}}/api/promociones/{{PROMO_ID}}/estado",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"activa\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Crear reporte de promociones",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/promociones/reportes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"periodo_inicio\": \"2026-06-01\",\n  \"periodo_fin\": \"2026-06-30\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar reportes de promociones",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/promociones/reportes" }
+        },
+        {
+          "name": "Crear promoción flash",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/promociones-flash",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Flash Viernes\",\n  \"descuento\": 25.00,\n  \"inicio\": \"2026-06-13T18:00:00Z\",\n  \"fin\": \"2026-06-13T23:59:00Z\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar promociones flash",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/promociones-flash" }
+        },
+        {
+          "name": "Detalle de promoción flash",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/promociones-flash/{{PROMO_ID}}" }
+        },
+        {
+          "name": "Promociones flash vigentes",
+          "request": { "method": "GET", "url": "{{BASE_URL}}/api/promociones-flash/vigentes" }
+        }
+      ]
+    },
+
+    {
+      "name": "Chats — Integración",
+      "item": [
+        {
+          "name": "Recibir resolución financiera (webhook)",
+          "request": {
+            "method": "POST",
+            "url": "{{BASE_URL}}/api/chats/resolucion",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"{{CONVERSATION_ID}}\",\n  \"tipo_resolucion\": \"RESOLVED_REFUND\",\n  \"requester_type\": \"CUSTOMER\",\n  \"requester_ext_id\": \"42\",\n  \"case_type\": \"ORDER\",\n  \"case_reference\": \"PED-1001\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar resoluciones pendientes",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/api/chats/resoluciones?estado=pendiente",
+              "query": [{ "key": "estado", "value": "pendiente" }]
+            }
+          }
+        },
+        {
+          "name": "Procesar resolución",
+          "request": {
+            "method": "PATCH",
+            "url": "{{BASE_URL}}/api/chats/resoluciones/{{RESOLUCION_ID}}/procesar",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reembolso_id\": 1,\n  \"compensacion_id\": null,\n  \"notas\": \"Reembolso aprobado y procesado\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar conversaciones",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/api/chats/conversaciones?limit=10&page=1",
+              "query": [
+                { "key": "limit", "value": "10" },
+                { "key": "page",  "value": "1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Detalle de conversación",
+          "request": {
+            "method": "GET",
+            "url": "{{BASE_URL}}/api/chats/conversaciones/{{CONVERSATION_ID}}"
+          }
+        },
+        {
+          "name": "Mensajes de conversación",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/api/chats/conversaciones/{{CONVERSATION_ID}}/mensajes?page=1&limit=20",
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cambiar estado de conversación",
+          "request": {
+            "method": "PATCH",
+            "url": "{{BASE_URL}}/api/chats/conversaciones/{{CONVERSATION_ID}}/estado",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"new_status\": \"RESOLVED_REFUND\",\n  \"changed_by_ext_id\": \"admin-01\",\n  \"reason\": \"Reembolso procesado correctamente\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Asignar agente a conversación",
+          "request": {
+            "method": "PATCH",
+            "url": "{{BASE_URL}}/api/chats/conversaciones/{{CONVERSATION_ID}}/agente",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agent_ext_id\": \"agent-05\",\n  \"agent_display_name\": \"Carlos López\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Estadísticas de chats por período",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{BASE_URL}}/api/chats/estadisticas?periodo_inicio=2026-06-01&periodo_fin=2026-06-30",
+              "query": [
+                { "key": "periodo_inicio", "value": "2026-06-01" },
+                { "key": "periodo_fin",    "value": "2026-06-30" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+
+  ]
+}
