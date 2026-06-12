@@ -85,7 +85,7 @@ app.get('/healthz', async (req, res) => {
 
 // Middlewares
 app.use(cors({
-  origin: process.env.BROKER_URL || 'http://localhost:5000',
+  origin: (origin, cb) => cb(null, true),
   credentials: true
 }));
 
@@ -95,6 +95,11 @@ app.get('/api-docs.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.send(swaggerSpec);
 });
+
+// Frontend de pruebas
+app.use('/panel', express.static(
+    path.join(__dirname, '../public')
+));
 
 
 app.use(helmet());

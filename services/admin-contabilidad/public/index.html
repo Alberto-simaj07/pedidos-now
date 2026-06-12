@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin & Contabilidad — Panel de Pruebas</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg2: #1a1d27;
+    --bg3: #22263a;
+    --border: #2e3350;
+    --accent: #6c63ff;
+    --accent2: #a78bfa;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: 240px; min-width: 240px; background: var(--bg2); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow-y: auto;
+  }
+  #sidebar h1 { padding: 20px 16px 8px; font-size: 13px; font-weight: 700; color: var(--accent2); text-transform: uppercase; letter-spacing: 1px; }
+  .nav-section { padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .nav-section-title { padding: 8px 16px 4px; font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .nav-btn {
+    display: block; width: 100%; text-align: left; padding: 8px 20px;
+    background: none; border: none; color: var(--text); cursor: pointer; font-size: 13px;
+    border-left: 3px solid transparent; transition: all .15s;
+  }
+  .nav-btn:hover { background: var(--bg3); color: var(--accent2); }
+  .nav-btn.active { background: var(--bg3); border-left-color: var(--accent); color: var(--accent2); font-weight: 600; }
+
+  /* ── URL BAR ── */
+  #url-bar { padding: 12px 16px; background: var(--bg3); border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
+  #url-bar label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  #base-url { flex: 1; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; color: var(--text); font-size: 12px; }
+  #token-bar { padding: 8px 16px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
+  #token-bar label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  #token-display { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; color: var(--green); font-size: 11px; font-family: monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #clear-token { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; }
+  #clear-token:hover { border-color: var(--red); color: var(--red); }
+
+  /* ── MAIN ── */
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  #content { flex: 1; overflow-y: auto; padding: 24px; display: flex; gap: 20px; }
+
+  /* ── PANEL ── */
+  .panel { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; flex: 1; min-width: 0; }
+  .panel h2 { font-size: 14px; font-weight: 700; color: var(--accent2); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .panel h2 span.badge { background: var(--bg3); color: var(--muted); font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 500; }
+
+  /* ── FORM ── */
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+  .field input, .field textarea, .field select {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 10px; color: var(--text); font-size: 13px; font-family: inherit;
+    transition: border-color .15s;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--accent); }
+  .field textarea { resize: vertical; min-height: 100px; font-family: 'Courier New', monospace; font-size: 12px; }
+
+  /* ── BUTTONS ── */
+  .btn { padding: 8px 18px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all .15s; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #5a52d5; }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-danger:hover { background: #dc2626; }
+  .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent2); }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+
+  /* ── METHOD BADGES ── */
+  .method { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-right: 6px; }
+  .GET    { background: #064e3b; color: #6ee7b7; }
+  .POST   { background: #1e3a5f; color: #93c5fd; }
+  .PATCH  { background: #3b1f64; color: #c4b5fd; }
+  .PUT    { background: #422006; color: #fbbf24; }
+  .DELETE { background: #450a0a; color: #fca5a5; }
+
+  /* ── RESPONSE ── */
+  #response-panel { width: 420px; min-width: 320px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden; }
+  #response-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  #response-header h3 { font-size: 13px; color: var(--muted); }
+  #status-badge { padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .s-2xx { background: #14532d; color: #86efac; }
+  .s-4xx { background: #450a0a; color: #fca5a5; }
+  .s-5xx { background: #431407; color: #fdba74; }
+  .s-0   { background: var(--bg3); color: var(--muted); }
+  #response-meta { padding: 8px 16px; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--border); display: flex; gap: 16px; }
+  #response-body { flex: 1; overflow-y: auto; padding: 16px; }
+  #response-body pre { font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; color: var(--text); }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .tab { padding: 7px 14px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--muted); cursor: pointer; font-size: 12px; font-weight: 600; transition: all .15s; margin-bottom: -1px; }
+  .tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* ── ENDPOINT LIST ── */
+  .ep-item { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); gap: 8px; cursor: pointer; transition: background .1s; border-radius: 4px; padding-left: 4px; }
+  .ep-item:hover { background: var(--bg3); }
+  .ep-path { font-size: 12px; color: var(--text); font-family: monospace; }
+  .ep-desc { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+  /* ── UTIL ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+  .tag { display: inline-block; background: var(--bg3); color: var(--accent2); font-size: 10px; padding: 2px 8px; border-radius: 20px; margin: 2px; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <h1>Pedidos Now</h1>
+  <div style="padding: 6px 16px 12px; font-size: 11px; color: var(--muted);">Admin &amp; Contabilidad</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">General</div>
+    <button class="nav-btn active" onclick="showSection('auth')">🔐 Auth</button>
+    <button class="nav-btn" onclick="showSection('dashboard')">📊 Dashboard</button>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Finanzas</div>
+    <button class="nav-btn" onclick="showSection('movimientos')">💸 Movimientos</button>
+    <button class="nav-btn" onclick="showSection('cobros')">💳 Cobros</button>
+    <button class="nav-btn" onclick="showSection('reembolsos')">↩ Reembolsos</button>
+    <button class="nav-btn" onclick="showSection('compensaciones')">🎁 Compensaciones</button>
+    <button class="nav-btn" onclick="showSection('pagos')">👤 Pagos Agentes</button>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Integraciones</div>
+    <button class="nav-btn" onclick="showSection('chats')">💬 Chats</button>
+    <button class="nav-btn" onclick="showSection('negocios')">🏪 Negocios</button>
+    <button class="nav-btn" onclick="showSection('restaurantes')">🍔 Restaurantes</button>
+    <button class="nav-btn" onclick="showSection('paqueteria')">📦 Paquetería</button>
+    <button class="nav-btn" onclick="showSection('bancos')">🏦 Bancos</button>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Promociones</div>
+    <button class="nav-btn" onclick="showSection('cupones')">🏷 Cupones</button>
+    <button class="nav-btn" onclick="showSection('promociones')">⚡ Promociones</button>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Reportes</div>
+    <button class="nav-btn" onclick="showSection('reportes')">📈 Reportes</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- URL + TOKEN BAR -->
+  <div id="url-bar">
+    <label>BASE URL</label>
+    <input id="base-url" value="http://localhost:3000" placeholder="http://localhost:3000">
+  </div>
+  <div id="token-bar">
+    <label>JWT TOKEN</label>
+    <div id="token-display">Sin token — haz login primero</div>
+    <button id="clear-token" onclick="clearToken()">Limpiar</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+    <div class="panel" id="left-panel">
+      <!-- sections rendered here -->
+    </div>
+    <div id="response-panel">
+      <div id="response-header">
+        <h3>Respuesta</h3>
+        <span id="status-badge" class="s-0">—</span>
+      </div>
+      <div id="response-meta">
+        <span id="resp-method">—</span>
+        <span id="resp-time">—</span>
+      </div>
+      <div id="response-body"><pre id="resp-pre" style="color:var(--muted)">Haz una petición para ver la respuesta aquí.</pre></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────────
+let TOKEN = localStorage.getItem('adm_token') || '';
+updateTokenDisplay();
+
+function base() { return document.getElementById('base-url').value.replace(/\/$/, ''); }
+
+function clearToken() {
+  TOKEN = '';
+  localStorage.removeItem('adm_token');
+  updateTokenDisplay();
+}
+function updateTokenDisplay() {
+  const el = document.getElementById('token-display');
+  if (TOKEN) { el.textContent = TOKEN.substring(0, 60) + '...'; el.style.color = 'var(--green)'; }
+  else { el.textContent = 'Sin token — haz login primero'; el.style.color = 'var(--muted)'; }
+}
+
+// ── HTTP ─────────────────────────────────────────────────────
+async function req(method, path, body, useToken = true) {
+  const url = base() + path;
+  const headers = { 'Content-Type': 'application/json' };
+  if (useToken && TOKEN) headers['Authorization'] = 'Bearer ' + TOKEN;
+
+  const statusEl  = document.getElementById('status-badge');
+  const preEl     = document.getElementById('resp-pre');
+  const methodEl  = document.getElementById('resp-method');
+  const timeEl    = document.getElementById('resp-time');
+
+  statusEl.className = 's-0'; statusEl.textContent = '...';
+  methodEl.textContent = method + ' ' + path;
+  preEl.innerHTML = '<span class="spinner"></span>';
+
+  const t0 = Date.now();
+  try {
+    const opts = { method, headers };
+    if (body && method !== 'GET') opts.body = JSON.stringify(body);
+    const r = await fetch(url, opts);
+    const ms = Date.now() - t0;
+    const text = await r.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = text; }
+
+    statusEl.textContent = r.status;
+    statusEl.className = r.status < 300 ? 's-2xx' : r.status < 500 ? 's-4xx' : 's-5xx';
+    timeEl.textContent = ms + ' ms';
+    preEl.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+
+    // Auto-save token
+    if (data?.token) { TOKEN = data.token; localStorage.setItem('adm_token', TOKEN); updateTokenDisplay(); }
+    if (data?.data?.token) { TOKEN = data.data.token; localStorage.setItem('adm_token', TOKEN); updateTokenDisplay(); }
+
+    return data;
+  } catch (err) {
+    statusEl.textContent = 'ERROR'; statusEl.className = 's-5xx';
+    timeEl.textContent = (Date.now() - t0) + ' ms';
+    preEl.textContent = err.message + '\n\n¿El servidor está corriendo en ' + base() + '?';
+    return null;
+  }
+}
+
+// ── NAVIGATION ───────────────────────────────────────────────
+function showSection(name) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('left-panel').innerHTML = sections[name]?.() || '<p>Sección no encontrada</p>';
+}
+
+// ── HELPER UI ────────────────────────────────────────────────
+function field(id, label, type = 'text', value = '', placeholder = '') {
+  if (type === 'json') return `<div class="field"><label>${label}</label><textarea id="${id}" rows="5">${value}</textarea></div>`;
+  if (type === 'select') return '';
+  return `<div class="field"><label>${label}</label><input id="${id}" type="${type}" value="${value}" placeholder="${placeholder}"></div>`;
+}
+function val(id) { return document.getElementById(id)?.value || ''; }
+function json(id) { try { return JSON.parse(val(id)); } catch { alert('JSON inválido en ' + id); return null; } }
+
+// ── SECTIONS ─────────────────────────────────────────────────
+const sections = {
+
+  auth: () => `
+    <h2>🔐 Auth <span class="badge">/api/auth</span></h2>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'t-login')">Login</button>
+      <button class="tab" onclick="switchTab(this,'t-register')">Registro</button>
+      <button class="tab" onclick="switchTab(this,'t-me')">Mi perfil</button>
+    </div>
+    <div class="tab-pane active" id="t-login">
+      ${field('l-email','Email','email','admin@test.com')}
+      ${field('l-pass','Password','password','password123')}
+      <div class="btn-row"><button class="btn btn-primary" onclick="doLogin()"><span class="method POST">POST</span> /login</button></div>
+    </div>
+    <div class="tab-pane" id="t-register">
+      ${field('r-nombre','Nombre','text','Alberto')}
+      ${field('r-apellidos','Apellidos','text','Simaj')}
+      ${field('r-email','Email','email','admin@test.com')}
+      ${field('r-pass','Password','password','password123')}
+      ${field('r-tipo','Tipo usuario','text','admin')}
+      <div class="btn-row"><button class="btn btn-primary" onclick="doRegister()"><span class="method POST">POST</span> /register</button></div>
+    </div>
+    <div class="tab-pane" id="t-me">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Requiere token activo.</p>
+      <div class="btn-row"><button class="btn btn-primary" onclick="req('GET','/api/auth/me')"><span class="method GET">GET</span> /me</button></div>
+    </div>`,
+
+  dashboard: () => `
+    <h2>📊 Dashboard <span class="badge">/api/dashboard</span></h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Indicadores generales del módulo.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="req('GET','/api/dashboard')"><span class="method GET">GET</span> /api/dashboard</button></div>`,
+
+  movimientos: () => `
+    <h2>💸 Movimientos <span class="badge">/api/movimientos</span></h2>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'mv-list')">Listar</button>
+      <button class="tab" onclick="switchTab(this,'mv-create')">Crear</button>
+      <button class="tab" onclick="switchTab(this,'mv-saldo')">Saldo fondo</button>
+      <button class="tab" onclick="switchTab(this,'mv-periodo')">Por período</button>
+    </div>
+    <div class="tab-pane active" id="mv-list">
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="req('GET','/api/movimientos')"><span class="method GET">GET</span> Todos</button>
+        <button class="btn btn-secondary" onclick="req('GET','/api/movimientos/estadisticas')"><span class="method GET">GET</span> Estadísticas</button>
+      </div>
+    </div>
+    <div class="tab-pane" id="mv-create">
+      ${field('mv-json','Body JSON','json',JSON.stringify({cuenta_id:1,tipo:"ingreso",subtipo:"pedido",modulo_origen:"broker",monto:150.75,descripcion:"Ingreso de prueba",pedido_id:1001,estado:"procesado"},null,2))}
+      <div class="btn-row"><button class="btn btn-primary" onclick="doMvCreate()"><span class="method POST">POST</span> /api/movimientos</button></div>
+    </div>
+    <div class="tab-pane" id="mv-saldo">
+      ${field('mv-cuenta','ID de cuenta','text','1')}
+      <div class="btn-row"><button class="btn btn-primary" onclick="req('GET','/api/movimientos/saldo/'+val('mv-cuenta'))"><span class="method GET">GET</span> /saldo/:id</button></div>
+    </div>
+    <div class="tab-pane" id="mv-periodo">
+      ${field('mv-ini','Fecha inicio','date','2026-01-01')}
+      ${field('mv-fin','Fecha fin','date','2026-12-31')}
+      <div class="btn-row"><button class="btn btn-primary" onclick="req('GET',\`/api/movimientos/periodo?inicio=\${val('mv-ini')}&fin=\${val('mv-fin')}\`)"><span class="method GET">GET</span> /periodo</button></div>
+    </div>`,
+
+  cobros: () => `
+    <h2>💳 Cobros <span class="badge">/api/payments</span></h2>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'co-list')">Listar</button>
+      <button class="tab" onclick="switchTab(this,'co-create')">Crear cobro</button>
+      <button class="tab" onclick="switchTab(this,'co-get')">Por ID</button>
+      <button class="tab" onclick="switchTab(this,'co-rep')">Repartidor</button>
+    </div>
+    <div class="tab-pane active" id="co-list">
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="req('GET','/api/payments')"><span class="method GET">GET</span> Todos</button>
+        <button class="btn btn-secondary" onclick="req('GET','/api/payments/estado/banco')"><span class="method GET">GET</span> Estado banco</button>
+      </div>
+    </div>
+    <div class="tab-pane" id="co-create">
+      ${field('co-json','Body JSON','json',JSON.stringify({cliente_id:10,pedido_id:1001,repartidor_id:25,monto_total:180.50,tarifa_servicio:15.00,propina:20.00,tipo_pago:"tarjeta",idempotency_key:"pedido-1001-"+Date.now()},null,2))}
+      <div class="btn-row"><button class="btn btn-primary" onclick="doCobro()"><span class="method POST">POST</span> /api/payments</button></div>
+    </div>
+    <div class="tab-pane" id="co-get">
+      ${field('co-id','ID del cobro','text','1')}
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="req('GET','/api/payments/'+val('co-id'))"><span class="method GET">GET</span> Obtener</button>
+        <button class="btn btn-danger" onclick="req('DELETE','/api/payments/'+val('co-id'))"><span class="method DELETE">DEL</span> Eliminar</button>
+      </div>
+    </div>
+    <div class="tab-pane" id="co-rep">
+      ${field('co-rep-id','ID del repartidor','text','1')}
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="req('GET','/api/payments/repartidor/'+val('co-rep-id'))"><span class="method GET">GET</span> Cobros</button>
+        <button class="btn btn-secondary" onclick="req('GET','/api/payments/saldo/'+val('co-rep-id'))"><span class="method GET">GET</span> Saldo</button>
+      </div>
+    </div>`,
+
+  reembolsos: () => `
+    <h2>↩ Reembolsos <span class="badge">/api/reembolsos</span></h2>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'re-list')">Listar</button>
+      <button class="tab" onclick="switchTab(this,'re-create')">Crear</button>
+      <button class="tab" onclick="switchTab(this,'re-action')">Procesar / Rechazar</button>
+    </div>
+    <div class="tab-pane active" id="re-list">
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="req('GET','/api/reembolsos')"><span class="method GET">GET</span> Todos</button>
+        <button class="btn btn-secondary" onclick="req('GET','/api/reembolsos/total')"><span class="method GET">GET</span> Total</button>
+      </div>
+    </div>
+    <div class="tab-pane" id="re-create">
+      ${field('re-json','Body JSON','json',JSON.stringify({usuario_ref_id:42,pedido_id_externo:1001,cobro_id:1,motivo:"Pedido llegó incompleto",monto:75.00},null,2))}
+      <div class="btn-row"><button class="btn btn-primary" onclick="doReembolso()"><span class="method POST">POST</span> /api/reembolsos</button></div>
+    </div>
+    <div class="tab-pane" id="re-action">
+      ${field('re-id','ID del reembolso','text','1')}
+      ${field('re-notas','Notas','text','Aprobado por auditoría')}
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="req('PUT','/api/reembolsos/'+val('re-id')+'/procesar',{notas:val('re-notas')})"><span class="method PUT">PUT</span> Procesar</button>
+        <button class="btn btn-danger" onclick="req('PUT','/api/reembolsos/'+val('re-id')+'/rechazar',{motivo:val('re-notas')})"><span class="method PUT">PUT</span> Rechazar</button>
+      </div>
+    </div>`,
+
+  compensaciones: () => `
+    <h2>🎁 Compensaciones <span class="badge">/api/compensaciones</span></h2>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'comp-list')">Listar</button>
+      <button class="tab" onclick="switchTab(this,'comp-create')">Crear</button>
+    </div>
+    <div class="tab-pane active" id="comp-list">
+      <div class="btn-row"><button class="btn btn-primary" onclick="req('GET','/api/compensaciones')"><span class="method GET">GET</span> Todas</button></div>
+    </div>
+    <div class="tab-pane" id="comp-create">
+      ${field('comp-json','Body JSON','json',JSON.stringify({entidad_comercial_id:5,motivo:"Falla del sistema durante hora pico",monto:200.00,notas:"Aprobado por coordinador"},null,2))}
+      <div class="btn-row"><button class="btn btn-primary" onclick="doCompensacion()"><span class="method POST">POST</span> /api/compensaciones</button></div>
+    </div>`,
+
+  pagos: () => `
+    <h2>👤 Pagos a Agentes <span class="badge">/api/pagos-agentes</span></h2>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'pa-list')">Listar</button>
+      <button class="tab" onclick="switchTab(this,'pa-create')">Crear pago</button>
+      <button class="tab" onclick="switchTab(this,'pa-agente')">Por agente</button>
+    </div>
+    <div class="tab-pane active" id="pa-list">
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="req('GET','/api/pagos-agentes')"><span class="method GET">GET</span> Todos</button>
+        <button class="btn btn-secondary" onclick="req('GET','/api/pagos-agentes/total')"><span class="method GET">GET</span> Total</button>
+      </div>
+    </div>
+    <div class="tab-pane" id="pa-create">
+      ${field('pa-json','Body JSON','json',JSON.stringify({agente_id:7,monto:500.00,periodo:"2026-06",descripcion:"Pago quincenal"},null,2))}
+      <div class="btn-row"><button class="btn btn-primary" onclick="doPago()"><span class="method POST">POST</span> /api/pagos-agentes</button></div>
+    </div>
+    <div class="tab-pane" id="pa-agente">
+      ${field('pa-id','ID del agente','text','1')}
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="req('GET','/api/pagos-agentes/agente/'+val('pa-id'))"><span class="method GET">GET</span> Pagos del agente</button>
+        <button class="btn btn-secondary" onclick="req('GET','/api/pagos-agentes/'+val('pa-id'))"><span class="method GET">GET</span> Por ID</button>
+      </div>
+    </div>`,
+
+  chats: () => `
+    <h2>💬 Chats — Integración <span class="badge">/api/chats</span></h2>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'ch-webhook')">Webhook</button>
+      <button class="tab" onclick="switchTab(this,'ch-resoluciones')">Resoluciones</button>
+      <button class="tab" onclick="switchTab(this,'ch-conversaciones')">Conversaciones</button>
+      <button class="tab" onclick="switchTab(this,'ch-stats')">Estadísticas</button>
+    </div>
+    <div class="tab-pane active" id="ch-webhook">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Simula el webhook que Chats envía cuando cierra una conversación.</p>
+      ${field('ch-conv-id','conversation_id (UUID)','text','3d0e8f5f-5327-11f1-b7d0-'+Math.random().toString(16).substring(2,14))}
+      ${field('ch-tipo','tipo_resolucion','text','RESOLVED_REFUND')}
+      ${field('ch-req-type','requester_type','text','CUSTOMER')}
+      ${field('ch-req-ext','requester_ext_id','text','42')}
+      ${field('ch-case','case_type','text','ORDER')}
+      ${field('ch-ref','case_reference','text','PED-1001')}
+      <div class="btn-row"><button class="btn btn-primary" onclick="doChatsWebhook()"><span class="method POST">POST</span> /api/chats/resolucion</button></div>
+    </div>
+    <div class="tab-pane" id="ch-resoluciones">
+      ${field('ch-res-estado','Filtrar por estado','text','pendiente','pendiente / procesado / rechazado')}
+      <div class="btn-row"><button class="btn btn-primary" onclick="req('GET','/api/chats/resoluciones?estado='+val('ch-res-estado'))"><span class="method GET">GET</span> Listar resoluciones</button></div>
+      <hr class="divider">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">Procesar una resolución (vincula reembolso o compensación creada)</p>
+      ${field('ch-proc-id','ID de resolución','text','1')}
+      ${field('ch-proc-rem','reembolso_id (opcional)','text','1')}
+      ${field('ch-proc-comp','compensacion_id (opcional)','text','')}
+      ${field('ch-proc-nota','Notas','text','Reembolso procesado correctamente')}
+      <div class="btn-row"><button class="btn btn-primary" onclick="doChatsProc()"><span class="method PATCH">PATCH</span> /resoluciones/:id/procesar</button></div>
+    </div>
+    <div class="tab-pane" id="ch-conversaciones">
+      ${field('ch-status','Filtrar status','text','','IN_PROGRESS / RESOLVED_REFUND / ...')}
+      ${field('ch-limit','Límite','text','10')}
+      <div class="btn-row"><button class="btn btn-primary" onclick="req('GET',\`/api/chats/conversaciones?limit=\${val('ch-limit')}\${val('ch-status')?'&status='+val('ch-status'):''}\`)"><span class="method GET">GET</span> Listar</button></div>
+      <hr class="divider">
+      ${field('ch-cid','conversation_id','text','3d0e8f5f-5327-11f1-b7d0-a2aa3582ff8d')}
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="req('GET','/api/chats/conversaciones/'+val('ch-cid'))"><span class="method GET">GET</span> Detalle</button>
+        <button class="btn btn-secondary" onclick="req('GET','/api/chats/conversaciones/'+val('ch-cid')+'/mensajes')"><span class="method GET">GET</span> Mensajes</button>
+      </div>
+    </div>
+    <div class="tab-pane" id="ch-stats">
+      ${field('ch-st-ini','Período inicio','date','2026-06-01')}
+      ${field('ch-st-fin','Período fin','date','2026-06-30')}
+      <div class="btn-row"><button class="btn btn-primary" onclick="req('GET',\`/api/chats/estadisticas?periodo_inicio=\${val('ch-st-ini')}&periodo_fin=\${val('ch-st-fin')}\`)"><span class="method GET">GET</span> Generar estadísticas</button></div>
+    </div>`,
+
+  negocios: () => `
+    <h2>🏪 Negocios <span class="badge">/api/reportes-negocios</span></h2>
+    <div class="btn-row" style="flex-wrap:wrap;gap:8px">
+      <button class="btn btn-secondary" onclick="req('GET','/api/reportes-negocios/health')"><span class="method GET">GET</span> Health</button>
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes-negocios/businesses')"><span class="method GET">GET</span> Listar negocios</button>
+      <button class="btn btn-secondary" onclick="req('GET','/api/reportes-negocios/resumen')"><span class="method GET">GET</span> Resumen</button>
+    </div>
+    <hr class="divider">
+    ${field('neg-id','Business ID','text','1')}
+    <div class="btn-row" style="flex-wrap:wrap;gap:8px">
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes-negocios/businesses/'+val('neg-id'))"><span class="method GET">GET</span> Detalle</button>
+      <button class="btn btn-secondary" onclick="req('GET','/api/reportes-negocios/businesses/'+val('neg-id')+'/catalog')"><span class="method GET">GET</span> Catálogo</button>
+      <button class="btn btn-secondary" onclick="req('GET','/api/reportes-negocios/businesses/'+val('neg-id')+'/products')"><span class="method GET">GET</span> Productos</button>
+      <button class="btn btn-secondary" onclick="req('GET','/api/reportes-negocios/resumen/'+val('neg-id'))"><span class="method GET">GET</span> Resumen</button>
+    </div>`,
+
+  restaurantes: () => `
+    <h2>🍔 Restaurantes <span class="badge">/api/reportes-restaurantes</span></h2>
+    <div class="btn-row" style="flex-wrap:wrap;gap:8px">
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes-restaurantes/restaurantes/resumen')"><span class="method GET">GET</span> Resumen general</button>
+      <button class="btn btn-secondary" onclick="req('GET','/api/reportes-restaurantes/restaurantes/cancelaciones-multas')"><span class="method GET">GET</span> Cancelaciones</button>
+      <button class="btn btn-secondary" onclick="req('GET','/api/reportes-restaurantes/resumen-orm')"><span class="method GET">GET</span> Resumen ORM</button>
+    </div>
+    <hr class="divider">
+    ${field('rest-id','Restaurante ID','text','1')}
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes-restaurantes/restaurantes/'+val('rest-id')+'/resumen')"><span class="method GET">GET</span> Resumen por restaurante</button>
+    </div>`,
+
+  paqueteria: () => `
+    <h2>📦 Paquetería <span class="badge">/api/reportes-paqueteria</span></h2>
+    <div class="btn-row" style="flex-wrap:wrap;gap:8px">
+      <button class="btn btn-secondary" onclick="req('GET','/api/reportes-paqueteria/health')"><span class="method GET">GET</span> Health</button>
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes-paqueteria/shipments')"><span class="method GET">GET</span> Envíos</button>
+      <button class="btn btn-secondary" onclick="req('GET','/api/reportes-paqueteria/packages')"><span class="method GET">GET</span> Paquetes</button>
+      <button class="btn btn-secondary" onclick="req('GET','/api/reportes-paqueteria/couriers')"><span class="method GET">GET</span> Repartidores</button>
+      <button class="btn btn-secondary" onclick="req('GET','/api/reportes-paqueteria/couriers/available')"><span class="method GET">GET</span> Disponibles</button>
+      <button class="btn btn-secondary" onclick="req('GET','/api/reportes-paqueteria/prices')"><span class="method GET">GET</span> Precios</button>
+      <button class="btn btn-secondary" onclick="req('GET','/api/reportes-paqueteria/resumen')"><span class="method GET">GET</span> Resumen</button>
+    </div>`,
+
+  bancos: () => `
+    <h2>🏦 Bancos <span class="badge">/api/bancos</span></h2>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="req('GET','/api/bancos/cuentas')"><span class="method GET">GET</span> Listar cuentas</button>
+      <button class="btn btn-secondary" onclick="req('GET','/api/bancos/estado')"><span class="method GET">GET</span> Estado</button>
+    </div>
+    <hr class="divider">
+    ${field('bank-acc','Número de cuenta','text','001-123456-78')}
+    <div class="btn-row"><button class="btn btn-primary" onclick="req('GET','/api/bancos/saldo/'+val('bank-acc'))"><span class="method GET">GET</span> Saldo</button></div>`,
+
+  cupones: () => `
+    <h2>🏷 Cupones <span class="badge">/api/cupones</span></h2>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'cup-create')">Crear</button>
+      <button class="tab" onclick="switchTab(this,'cup-get')">Buscar</button>
+      <button class="tab" onclick="switchTab(this,'cup-actions')">Acciones</button>
+    </div>
+    <div class="tab-pane active" id="cup-create">
+      ${field('cup-json','Body JSON','json',JSON.stringify({usuario_id:10,descuento:15.00,tipo:"porcentaje",vence_en_dias:30},null,2))}
+      <div class="btn-row"><button class="btn btn-primary" onclick="doCupon()"><span class="method POST">POST</span> /api/cupones/lealtad</button></div>
+    </div>
+    <div class="tab-pane" id="cup-get">
+      ${field('cup-codigo','Código de cupón','text','PROMO2026')}
+      ${field('cup-id','ID de cupón','text','1')}
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="req('GET','/api/cupones/codigo/'+val('cup-codigo'))"><span class="method GET">GET</span> Por código</button>
+        <button class="btn btn-secondary" onclick="req('GET','/api/cupones/'+val('cup-id'))"><span class="method GET">GET</span> Por ID</button>
+      </div>
+    </div>
+    <div class="tab-pane" id="cup-actions">
+      ${field('cup-act-id','ID del cupón','text','1')}
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="req('PATCH','/api/cupones/'+val('cup-act-id')+'/activar')"><span class="method PATCH">PATCH</span> Activar</button>
+        <button class="btn btn-danger" onclick="req('PATCH','/api/cupones/'+val('cup-act-id')+'/cancelar')"><span class="method PATCH">PATCH</span> Cancelar</button>
+        <button class="btn btn-secondary" onclick="req('PATCH','/api/cupones/vencer')"><span class="method PATCH">PATCH</span> Vencer expirados</button>
+      </div>
+    </div>`,
+
+  promociones: () => `
+    <h2>⚡ Promociones <span class="badge">/api/promociones</span></h2>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab(this,'pr-list')">Listar</button>
+      <button class="tab" onclick="switchTab(this,'pr-flash')">Flash</button>
+      <button class="tab" onclick="switchTab(this,'pr-reportes')">Reportes</button>
+    </div>
+    <div class="tab-pane active" id="pr-list">
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="req('GET','/api/promociones')"><span class="method GET">GET</span> Todas</button>
+      </div>
+      <hr class="divider">
+      ${field('pr-id','ID de promoción','text','1')}
+      ${field('pr-estado','Nuevo estado','text','activa')}
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="req('GET','/api/promociones/'+val('pr-id'))"><span class="method GET">GET</span> Por ID</button>
+        <button class="btn btn-primary" onclick="req('PATCH','/api/promociones/'+val('pr-id')+'/estado',{estado:val('pr-estado')})"><span class="method PATCH">PATCH</span> Cambiar estado</button>
+      </div>
+    </div>
+    <div class="tab-pane" id="pr-flash">
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="req('GET','/api/promociones-flash')"><span class="method GET">GET</span> Todas</button>
+        <button class="btn btn-secondary" onclick="req('GET','/api/promociones-flash/vigentes')"><span class="method GET">GET</span> Vigentes</button>
+      </div>
+      <hr class="divider">
+      ${field('pr-flash-json','Body JSON','json',JSON.stringify({nombre:"Flash Viernes",descuento:25.00,inicio:"2026-06-13T18:00:00Z",fin:"2026-06-13T23:59:00Z"},null,2))}
+      <div class="btn-row"><button class="btn btn-primary" onclick="doFlash()"><span class="method POST">POST</span> /api/promociones-flash</button></div>
+    </div>
+    <div class="tab-pane" id="pr-reportes">
+      ${field('pr-rep-ini','Período inicio','date','2026-06-01')}
+      ${field('pr-rep-fin','Período fin','date','2026-06-30')}
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="req('POST','/api/promociones/reportes',{periodo_inicio:val('pr-rep-ini'),periodo_fin:val('pr-rep-fin')})"><span class="method POST">POST</span> Crear reporte</button>
+        <button class="btn btn-secondary" onclick="req('GET','/api/promociones/reportes')"><span class="method GET">GET</span> Listar</button>
+      </div>
+    </div>`,
+
+  reportes: () => `
+    <h2>📈 Reportes <span class="badge">/api/reportes</span></h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Todos los reportes leen de la BD local.</p>
+    <div class="btn-row" style="flex-wrap:wrap;gap:8px">
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes/ventas')"><span class="method GET">GET</span> Ventas</button>
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes/pedidos')"><span class="method GET">GET</span> Pedidos</button>
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes/crecimiento')"><span class="method GET">GET</span> Crecimiento</button>
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes/costos')"><span class="method GET">GET</span> Costos</button>
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes/propinas')"><span class="method GET">GET</span> Propinas</button>
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes/chats')"><span class="method GET">GET</span> Chats</button>
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes/usuarios')"><span class="method GET">GET</span> Usuarios</button>
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes/reembolsos-compensaciones')"><span class="method GET">GET</span> Reembolsos/Comp.</button>
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes/estadisticas-entidad')"><span class="method GET">GET</span> Stats entidad</button>
+      <button class="btn btn-primary" onclick="req('GET','/api/reportes/pedidos-externos')"><span class="method GET">GET</span> Pedidos externos</button>
+    </div>
+    <hr class="divider">
+    ${field('rep-fecha','Fecha (pagos por fecha)','date','2026-06-12')}
+    <div class="btn-row"><button class="btn btn-primary" onclick="req('GET','/api/reportes/pagos-fecha?fecha='+val('rep-fecha'))"><span class="method GET">GET</span> Pagos por fecha</button></div>`,
+};
+
+// ── ACTIONS ──────────────────────────────────────────────────
+function doLogin() {
+  req('POST', '/api/auth/login', { email: val('l-email'), password: val('l-pass') }, false);
+}
+function doRegister() {
+  req('POST', '/api/auth/register', {
+    nombre: val('r-nombre'), apellidos: val('r-apellidos'),
+    email: val('r-email'), password: val('r-pass'), tipo_usuario: val('r-tipo'), rol: 'admin'
+  }, false);
+}
+function doMvCreate() { const b = json('mv-json'); if (b) req('POST', '/api/movimientos', b); }
+function doCobro()    { const b = json('co-json'); if (b) req('POST', '/api/payments', b); }
+function doReembolso(){ const b = json('re-json'); if (b) req('POST', '/api/reembolsos', b); }
+function doCompensacion() { const b = json('comp-json'); if (b) req('POST', '/api/compensaciones', b); }
+function doPago()     { const b = json('pa-json'); if (b) req('POST', '/api/pagos-agentes', b); }
+function doCupon()    { const b = json('cup-json'); if (b) req('POST', '/api/cupones/lealtad', b); }
+function doFlash()    { const b = json('pr-flash-json'); if (b) req('POST', '/api/promociones-flash', b); }
+
+function doChatsWebhook() {
+  req('POST', '/api/chats/resolucion', {
+    conversation_id:  val('ch-conv-id'),
+    tipo_resolucion:  val('ch-tipo'),
+    requester_type:   val('ch-req-type'),
+    requester_ext_id: val('ch-req-ext'),
+    case_type:        val('ch-case'),
+    case_reference:   val('ch-ref')
+  });
+}
+function doChatsProc() {
+  const remId  = val('ch-proc-rem')  ? Number(val('ch-proc-rem'))  : null;
+  const compId = val('ch-proc-comp') ? Number(val('ch-proc-comp')) : null;
+  req('PATCH', '/api/chats/resoluciones/' + val('ch-proc-id') + '/procesar',
+    { reembolso_id: remId, compensacion_id: compId, notas: val('ch-proc-nota') });
+}
+
+// ── TABS ─────────────────────────────────────────────────────
+function switchTab(btn, paneId) {
+  const container = btn.closest('.panel') || document.getElementById('left-panel');
+  container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  container.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(paneId)?.classList.add('active');
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+document.getElementById('left-panel').innerHTML = sections.auth();
+</script>
+</body>
+</html>
