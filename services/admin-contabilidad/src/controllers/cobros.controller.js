@@ -1,7 +1,7 @@
 const cobrosService = require('../services/cobros.service');
 const Joi = require('joi');
 
-// ========== SCHEMA (AJUSTADO, NO ELIMINADO) ==========
+// ========== SCHEMA ==========
 
 const cobroSchema = Joi.object({
     idempotency_key: Joi.string().required(),
@@ -116,7 +116,7 @@ const cobroSchema = Joi.object({
         })
 });
 
-// ========== OBTENER COBROS (CON SEGURIDAD + FILTROS) ==========
+// ========== OBTENER COBROS ==========
 
 const obtenerCobros = async (req, res) => {
     try {
@@ -127,7 +127,7 @@ const obtenerCobros = async (req, res) => {
         const filtros = {
             ...(estado && { estado }),
             ...(inicio && fin && { inicio, fin }),
-            cliente_id // 🔐 seguridad agregada
+            cliente_id
         };
 
         const cobros = await cobrosService.obtenerCobros(filtros);
